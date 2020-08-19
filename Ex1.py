@@ -21,6 +21,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # файл настроек
     settings = QSettings("./config.ini", QSettings.IniFormat)
 
+    tickers = {}
+
     dateEnter = ""
     flagOnline = 0
     flagPrivate = 0
@@ -194,6 +196,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else:
                     self.model1.item(iloc, 6).setBackground(self.qb_white)
                     self.model1.item(iloc, 6).setText('')
+        self.tickers.update(ticker)
         for tick in ticker:
             item = self.model1.findItems(tick, flags=Qt.MatchExactly, column=0)
             if not item:
@@ -794,7 +797,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # bardown.setBrush(QColor(0, 192, 0))
         # plotImage.addItem(bardown)
 
-        self.graphicsView.autoRange()
+       # self.graphicsView.autoRange()
 
         plotImage.setMouseEnabled(True, False)
         viewBox = plotImage.getViewBox()

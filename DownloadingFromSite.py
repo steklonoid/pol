@@ -40,13 +40,17 @@ class ThreadReturnChartData(QThread):
         self.f = f
 
     def run(self):
-        for i in range(0, self.f.model1.rowCount()):
-            tick = (self.f.model1.item(i, 0).text())
-            lt = QDateTime.fromString(self.f.model1.item(i, 1).text(), 'dd.MM.yyyy HH:mm')
-            QDateTime.setTimeZone(lt, QTimeZone(0))
-            lastcharupdate = str(QDateTime.toSecsSinceEpoch(lt))
-            self.f.q['Normal'].put({'command': 'returnChartData', 'parameters': {'currencyPair': tick, 'start': lastcharupdate, 'period': '7200'}}, True)
-            time.sleep(1.5)
+        for i in self.f.tickers.keys():
+            item = self.f.model1.findItems(i, flags=Qt.MatchExactly, column=0)
+            if item:
+                tick = item[0].text()
+                lt = QDateTime.fromString(self.f.model1.item(item[0].row(), 1).text(), 'dd.MM.yyyy HH:mm')
+                QDateTime.setTimeZone(lt, QTimeZone(0))
+                lastcharupdate = str(QDateTime.toSecsSinceEpoch(lt))
+                self.f.q['Normal'].put({'command': 'returnChartData',
+                                        'parameters': {'currencyPair': tick, 'start': lastcharupdate,
+                                                       'period': '7200'}}, True)
+        time.sleep(1.5)
 
 class ThreadReturnOrderBook(QThread):
     def __init__(self, f):
