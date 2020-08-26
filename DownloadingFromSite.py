@@ -49,7 +49,7 @@ class ThreadReturnChartData(QThread):
                 lastcharupdate = str(QDateTime.toSecsSinceEpoch(lt))
                 self.f.q['Normal'].put({'command': 'returnChartData',
                                         'parameters': {'currencyPair': tick, 'start': lastcharupdate,
-                                                       'period': '7200'}}, True)
+                                                       'period': '7200', 'resolution':'auto'}}, True)
         time.sleep(1.5)
 
 class ThreadReturnOrderBook(QThread):
