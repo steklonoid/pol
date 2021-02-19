@@ -2,8 +2,6 @@ import time
 from PyQt5.QtCore import *
 from privatPolonix import Poloniex
 
-
-
 class ThreadReturnCurrencies(QThread):
     def __init__(self, f):
         QThread.__init__(self)
@@ -23,17 +21,6 @@ class ThreadReturnTicker(QThread):
         self.f.q['Normal'].put({'command':'returnTicker','parameters':{}}, True)
         time.sleep(2)
 
-
-class ThreadReturnCompleteBalances(QThread):
-    def __init__(self, f):
-        QThread.__init__(self)
-        self.f = f
-
-    def run(self):
-        self.f.q['Normal'].put({'command':'returnCompleteBalances', 'parameters':{}}, True)
-        time.sleep(2)
-
-
 class ThreadReturnChartData(QThread):
     def __init__(self, f):
         QThread.__init__(self)
@@ -49,19 +36,8 @@ class ThreadReturnChartData(QThread):
                 lastcharupdate = str(QDateTime.toSecsSinceEpoch(lt))
                 self.f.q['Normal'].put({'command': 'returnChartData',
                                         'parameters': {'currencyPair': tick, 'start': lastcharupdate,
-                                                       'period': '7200', 'resolution':'auto'}}, True)
+                                                       'period': '7200', 'resolution': 'auto'}}, True)
         time.sleep(1.5)
-
-class ThreadReturnOrderBook(QThread):
-    def __init__(self, f):
-        QThread.__init__(self)
-        self.f = f
-        self.cur = ''
-
-    def run(self):
-        self.f.q['Normal'].put({'command': 'returnOrderBook', 'parameters': {'currencyPair': self.cur, 'depth': '10'}}, True)
-        time.sleep(1)
-
 
 class ThreadLoadQueue(QThread):
     queueProcessed = pyqtSignal()

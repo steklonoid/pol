@@ -7,10 +7,9 @@ from PyQt5.QtGui import *
 from mainWindow import Ui_MainWindow
 from dateEnter import Ui_Form
 from tester import testerWindow
-from trader import traderWindow
+# from neyro import NeyroWindow
 from datetime import datetime
-from DownloadingFromSite import ThreadReturnCurrencies, ThreadReturnTicker, ThreadReturnCompleteBalances, ThreadLoadQueue, ThreadReturnChartData, ThreadReturnOrderBook
-import pyqtgraph as pg
+from DownloadingFromSite import ThreadReturnCurrencies, ThreadReturnTicker, ThreadLoadQueue, ThreadReturnChartData
 import queue
 import time
 import numpy as np
@@ -25,7 +24,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     dateEnter = ""
     flagOnline = 0
-    flagPrivate = 0
     # очередь задач
     q = {'High':queue.Queue(0), 'Normal':queue.Queue(10), 'Low':queue.Queue(10)}
     # результатоприемник
@@ -59,18 +57,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.model1.setColumnCount(7)
         self.model1.setHorizontalHeaderLabels(['Пара', ' посл. Бар', 'Цена', '% за 24 ч', 'Объем', 'Купить', 'Продать'])
 
-        # модель для отображения баланса
-        self.model2 = QStandardItemModel()
-        self.model2.setColumnCount(4)
-        self.model2.setHorizontalHeaderLabels(['Валюта', 'Свободно', 'В ордерах', 'Всего USD'])
-        self.tableView2.setModel(self.model2)
-
-        # модель для отображения открытых ордеров
-        model3 = QStandardItemModel()
-        model3.setColumnCount(4)
-        model3.setHorizontalHeaderLabels(['Валюта', 'Свободно', 'В ордерах', 'USD'])
-        self.tableView3.setModel(model3)
-
         # модель для отображения стакана цен
         self.modelAsks = QStandardItemModel()
         self.modelAsks.setColumnCount(2)
@@ -82,26 +68,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.th_ThreadReturnCurrencies.finished.connect(self.finished_ThreadReturnCurrencies)
         self.th_ThreadReturnTicker = ThreadReturnTicker(self)
         self.th_ThreadReturnTicker.finished.connect(self.finished_ThreadReturnTicker)
-        self.th_ThreadReturnCompleteBalances = ThreadReturnCompleteBalances(self)
-        self.th_ThreadReturnCompleteBalances.finished.connect(self.finished_ThreadReturnCompleteBalances)
         self.th_ThreadReturnChartData = ThreadReturnChartData(self)
         self.th_ThreadReturnChartData.finished.connect(self.finished_ThreadReturnChartData)
-        self.th_ThreadReturnOrderBook = ThreadReturnOrderBook(self)
-        self.th_ThreadReturnOrderBook.finished.connect(self.finished_ThreadReturnOrderBook)
         self.thq = ThreadLoadQueue(self)
         self.thq.finished.connect(self.finished_thq)
         self.thq.queueProcessed.connect(self.queueProcessed_thq)
-
-        # дмалог трейдер
-        self.qw = QDialog(self)
-        self.qw.finished.connect(self.traderDialogFinished)
-        self.qw.setModal(True)
-        tw = traderWindow()
-        tw.setupUi(self.qw)
-        tw.twAsks.setModel(self.modelAsks)
-        tw.twAsks.setColumnWidth(1, 140)
-        tw.twBids.setModel(self.modelBids)
-        tw.twBids.setColumnWidth(1, 140)
         # показываем главное окно
         self.show()
 
@@ -112,23 +83,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 # ============================= threading ====================================
     @pyqtSlot()
     def finished_ThreadReturnCurrencies(self):
-        if self.flagOnline == 1 and not self.qw.isVisible():
+        if self.flagOnline == 1:
             self.th_ThreadReturnCurrencies.start()
     @pyqtSlot()
     def finished_ThreadReturnTicker(self):
-        if self.flagOnline == 1 and not self.qw.isVisible():
+        if self.flagOnline == 1:
             self.th_ThreadReturnTicker.start()
     @pyqtSlot()
-    def finished_ThreadReturnCompleteBalances(self):
-        if self.flagOnline == 1 and self.flagPrivate == 1 and not self.qw.isVisible():
-            self.th_ThreadReturnCompleteBalances.start()
-    @pyqtSlot()
     def finished_ThreadReturnChartData(self):
-        if self.flagOnline == 1 and not self.qw.isVisible():
+        if self.flagOnline == 1:
             self.th_ThreadReturnChartData.start()
     @pyqtSlot()
     def finished_ThreadReturnOrderBook(self):
-        if self.flagOnline == 1 and self.qw.isVisible():
+        if self.flagOnline == 1:
             self.th_ThreadReturnOrderBook.start()
     @pyqtSlot()
     def finished_thq(self):
@@ -171,31 +138,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.model1.item(iloc, 3).setBackground(self.qb_red)
             self.model1.item(iloc, 3).setData(round(pchange * 100, 2), Qt.DisplayRole)
             self.model1.item(iloc, 4).setData(float(ticker[tick]['baseVolume']), Qt.DisplayRole)
-            if self.flagPrivate == 1:
-                c1c2 = tick.split("_")
-                item = self.model2.findItems(c1c2[0], flags=Qt.MatchExactly, column=0)
-                lastprice = float(ticker[tick]['last'])
-                if lastprice == 0:
-                    return
-                if item:
-                    self.model1.item(iloc, 5).setBackground(self.qb_green)
-                    self.model1.item(iloc, 5).setFont(QFont("Times", 7))
-                    ambase = self.model2.item(item[0].row(), 1).text()
-                    amsec = str(round(float(ambase) / lastprice, 2))
-                    self.model1.item(iloc, 5).setText(amsec + ' ' + c1c2[1] + ' за' + '\n' + ambase + ' ' + self.model2.item(item[0].row(), 0).text())
-                else:
-                    self.model1.item(iloc, 5).setBackground(self.qb_white)
-                    self.model1.item(iloc, 5).setText('')
-                item = self.model2.findItems(c1c2[1], flags=Qt.MatchExactly, column=0)
-                if item:
-                    self.model1.item(iloc, 6).setBackground(self.qb_green)
-                    self.model1.item(iloc, 6).setFont(QFont("Times", 7))
-                    amsec = self.model2.item(item[0].row(), 1).text()
-                    ambase = str(round(float(amsec) * lastprice, 2))
-                    self.model1.item(iloc, 6).setText(amsec + ' ' + self.model2.item(item[0].row(), 0).text() + ' за' + '\n' + ambase + ' ' + c1c2[0])
-                else:
-                    self.model1.item(iloc, 6).setBackground(self.qb_white)
-                    self.model1.item(iloc, 6).setText('')
         self.tickers.update(ticker)
         for tick in ticker:
             item = self.model1.findItems(tick, flags=Qt.MatchExactly, column=0)
@@ -705,12 +647,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.toplabel2.setStyleSheet('background-color: rgb(255, 212, 212)')
             self.toplabel2.setText('database disconnected')
-        if self.flagPrivate == 1:
-            self.toplabel3.setStyleSheet('background-color: rgb(212, 255, 212)')
-            self.toplabel3.setText('private')
-        else:
-            self.toplabel3.setStyleSheet('background-color: rgb(255, 212, 212)')
-            self.toplabel3.setText('public')
 
     @pyqtSlot()
     def mainwindow_toplabelsclicked(self):
@@ -724,28 +660,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.flagOnline = 1
                 self.finished_ThreadReturnCurrencies()
                 self.finished_ThreadReturnTicker()
-                self.finished_ThreadReturnCompleteBalances()
                 self.finished_ThreadReturnChartData()
                 self.finished_thq()
             else:
                 self.flagOnline = 0
-                self.flagPrivate = 0
                 # self.q['Normal'].clear()
         elif name == 'toplabel2':
             if not self.db.isOpen():
                 self.trig_menuopendb()
             else:
                 self.db.close()
-                self.flagPrivate = 0
                 self.flagOnline = 0
-        elif name == 'toplabel3':
-            if self.flagPrivate == 0:
-                if not self.db.isOpen() or self.flagOnline == 0:
-                    return
-                self.flagPrivate = 1
-                self.finished_ThreadReturnCompleteBalances()
-            else:
-                self.flagPrivate = 0
         self.updateButtons()
 
     @pyqtSlot()
@@ -763,48 +688,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tableView1.model().setFilterRegExp(ct+'_')
 
     # ============= действия по меню по правой кнопке на model1 =========
-
-    def drawChartGraphics(self, cur):
-        self.graphicsView.clear()
-        plotImage = self.graphicsView.getPlotItem()
-
-        mhigh = []
-        mlow = []
-        mup = []
-        mdown = []
-        q1 = QSqlQuery(self.db)
-        q1.prepare("SELECT date, low, high, uprank, downrank FROM chardata7200 WHERE curname = :curname ORDER BY date ASC")
-        q1.bindValue(":curname", cur)
-        q1.exec_()
-        while q1.next():
-            mhigh.append([q1.value(0), q1.value(2)])
-            mlow.append([q1.value(0), q1.value(1)])
-            if q1.value(3) >= 2:
-                mup.append([q1.value(0), q1.value(2)])
-            if q1.value(4) >= 2:
-                mdown.append([q1.value(0), q1.value(1)])
-
-        self.graphicsView.plot([x[0] for x in mhigh], [x[1] for x in mhigh])
-        barlow = pg.PlotDataItem([x[0] for x in mlow], [x[1] for x in mlow])
-        plotImage.addItem(barlow)
-
-        # barup = pg.ScatterPlotItem([x[0] for x in mup], [x[1] for x in mup])
-        # barup.setSymbol('d')
-        # barup.setBrush(QColor(192, 0, 0))
-        # plotImage.addItem(barup)
-        # bardown = pg.ScatterPlotItem([x[0] for x in mdown], [x[1] for x in mdown])
-        # bardown.setSymbol('d')
-        # bardown.setBrush(QColor(0, 192, 0))
-        # plotImage.addItem(bardown)
-
-       # self.graphicsView.autoRange()
-
-        plotImage.setMouseEnabled(True, False)
-        viewBox = plotImage.getViewBox()
-        viewBox.enableAutoRange(axis='y', enable=True)
-        viewBox.setAutoVisible(False, True)
-        plotImage.getAxis("bottom").showLabel(False)
-
     def saveForDeductor_Bar(self, cur):
         fpath = self.settings.value("dedpath", "")
         fname = cur + "_ded_bar.txt"
@@ -889,30 +772,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             file.close()
             self.settings.setValue("mt5DateOfLastUnloading"+cur, lastDatedt)
 
+    # def saveForNeyronet(self, cur):
+    #     if not self.db.isOpen():
+    #         return
+    #     qw = QDialog(self)
+    #     qw.setWindowTitle('Расчет нейросети')
+    #     tw = NeyroWindow(self.db, cur)
+    #     tw.setup_ui(qw)
+    #     qw.show()
+
     @pyqtSlot()
     def setupDateEnterValue(self, dateEnter):
         self.dateEnter = dateEnter
 # ==================================================================
-    @pyqtSlot()
-    def tableView1Clicked(self):
-        index = self.tableView1.selectedIndexes()[0].siblingAtColumn(0)
-        cur = self.tableView1.model().itemData(index)[Qt.DisplayRole]
-        self.drawChartGraphics(cur)
-
-    @pyqtSlot()
-    def tableView1DoubleClicked(self):
-        index = self.tableView1.selectedIndexes()[0].siblingAtColumn(0)
-        cur = self.tableView1.model().itemData(index)[Qt.DisplayRole]
-
-        self.qw.setWindowTitle('Торговля по паре: '+cur)
-        self.modelAsks.setHorizontalHeaderLabels(['Цена', 'Продают, '+str.split(cur, '_')[1]])
-        self.modelBids.setHorizontalHeaderLabels(['Цена', 'Покупают, '+str.split(cur, '_')[1]])
-        self.qw.show()
-
-
-        self.th_ThreadReturnOrderBook.cur = cur
-        self.finished_ThreadReturnOrderBook()
-
     @pyqtSlot()
     def tv_customContextMenuRequested(self):
         indexes = self.tableView1.selectedIndexes()
@@ -929,6 +801,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         menu.addMenu(menu1)
 
         menu.addAction(self.tr("Выгрузить для Forex MT5")).triggered.connect(lambda: self.customContextMenuTriggered(4))
+        menu.addAction(self.tr("Выгрузить для Нейросети")).triggered.connect(lambda: self.customContextMenuTriggered(5))
         menu.exec_(QCursor.pos())
 
     @pyqtSlot()
@@ -959,24 +832,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.saveForDeductor_FractKoef(cur)
         elif itemNumber == 4:
             self.saveForForexMT5(cur)
-
-    @pyqtSlot()
-    def traderDialogFinished(self):
-        self.finished_ThreadReturnCurrencies()
-        self.finished_ThreadReturnTicker()
-        self.finished_ThreadReturnCompleteBalances()
-        self.finished_ThreadReturnChartData()
-
+        elif itemNumber == 5:
+            self.saveForNeyronet(cur)
 # =================================================================
     def updateTableView(self):
         qi1 = self.model1.createIndex(0, 0)
         qi2 = self.model1.createIndex(self.model1.rowCount(),
                                                   self.model1.columnCount())
         self.tableView1.dataChanged(qi1, qi2)
-        qi1 = self.tableView2.model().createIndex(0, 0)
-        qi2 = self.tableView2.model().createIndex(self.tableView2.model().rowCount(),
-                                                  self.tableView2.model().columnCount())
-        self.tableView2.dataChanged(qi1, qi2)
 
 app = QApplication([])
 win = MainWindow()
