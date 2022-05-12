@@ -1,9 +1,9 @@
 import sys
 import os
-from PyQt5.QtWidgets import *
-from PyQt5.QtSql import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtSql import *
+from PyQt6.QtCore import *
+from PyQt6.QtGui import *
 from mainWindow import Ui_MainWindow
 from dateEnter import Ui_Form
 from tester import testerWindow
@@ -18,7 +18,7 @@ INTERVAL = 0.2
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     # файл настроек
-    settings = QSettings("./config.ini", QSettings.IniFormat)
+    settings = QSettings("./config.ini", QSettings.Format.IniFormat)
 
     tickers = {}
 
@@ -31,16 +31,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     qb_red = QBrush()
     qb_red.setColor(QColor(255, 212, 212))
-    qb_red.setStyle(Qt.SolidPattern)
+    qb_red.setStyle(Qt.BrushStyle.SolidPattern)
     qb_green = QBrush()
     qb_green.setColor(QColor(212, 255, 212))
-    qb_green.setStyle(Qt.SolidPattern)
+    qb_green.setStyle(Qt.BrushStyle.SolidPattern)
     qb_gold = QBrush()
     qb_gold.setColor(QColor(249, 166, 2))
-    qb_gold.setStyle(Qt.SolidPattern)
+    qb_gold.setStyle(Qt.BrushStyle.SolidPattern)
     qb_white = QBrush()
     qb_white.setColor(QColor(255, 255, 255))
-    qb_white.setStyle(Qt.SolidPattern)
+    qb_white.setStyle(Qt.BrushStyle.SolidPattern)
 
     def __init__(self):
         super().__init__()
@@ -682,7 +682,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tableView1.model().setFilterFixedString('1')
         elif ct == 'все':
             self.tableView1.model().setFilterRole(0)
-            self.tableView1.model().setFilterRegExp(QRegExp("*"))
+            self.tableView1.model().setFilterRegExp(QRegularExpression("*"))
         else:
             self.tableView1.model().setFilterRole(0)
             self.tableView1.model().setFilterRegExp(ct+'_')
@@ -843,7 +843,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 app = QApplication([])
 win = MainWindow()
-sys.exit(app.exec_())
+sys.exit(app.exec())
 
 
 

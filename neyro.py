@@ -1,11 +1,11 @@
-from PyQt5.QtCore import QSize, Qt,  pyqtSlot
-from PyQt5.QtWidgets import QPushButton, QGridLayout, QLabel, QLineEdit, QTextEdit, QSizePolicy, QHBoxLayout, QWidget
-from PyQt5.QtSql import QSqlQuery
+from PyQt6.QtCore import QSize, Qt,  pyqtSlot
+from PyQt6.QtWidgets import QPushButton, QGridLayout, QLabel, QLineEdit, QTextEdit, QSizePolicy, QHBoxLayout, QWidget
+from PyQt6.QtSql import QSqlQuery
 
 import numpy as np
 #   import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers, activations, optimizers, losses
+from keras import layers, activations, optimizers, losses
 
 
 class NeyroWindow(object):

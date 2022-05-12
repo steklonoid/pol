@@ -1,5 +1,5 @@
 import time
-from PyQt5.QtCore import *
+from PyQt6.QtCore import *
 from privatPolonix import Poloniex
 
 class ThreadReturnCurrencies(QThread):

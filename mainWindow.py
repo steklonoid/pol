@@ -1,6 +1,7 @@
 # модуль главного окна
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt6.QtCore import *
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
 from datetime import datetime
 
 class Ui_MainWindow(object):
@@ -15,11 +16,11 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
         self.gridLayout.setObjectName("gridLayout")
 
-        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter = QSplitter(Qt.Orientation.Horizontal)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-        self.splitterleft = QSplitter(Qt.Vertical)
+        self.splitterleft = QSplitter(Qt.Orientation.Vertical)
         self.splitter.addWidget(self.splitterleft)
-        self.splitterright = QSplitter(Qt.Vertical)
+        self.splitterright = QSplitter(Qt.Orientation.Vertical)
         self.splitter.addWidget(self.splitterright)
         self.splitter.setSizes([2, 1])
 
@@ -53,17 +54,17 @@ class Ui_MainWindow(object):
         self.tableView1 = QTableView(self.splitterleft)
         self.tableView1.setObjectName("tableView1")
         self.tableView1.resizeColumnsToContents()
-        self.tableView1.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tableView1.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tableView1.setSortingEnabled(True)
-        self.tableView1.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableView1.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.tableView1.customContextMenuRequested.connect(self.tv_customContextMenuRequested)
 
         self.tableView2 = QTableView(self.centralwidget)
         self.tableView2.setObjectName("tableView2")
         self.tableView2.resizeColumnsToContents()
-        self.tableView2.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tableView2.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tableView2.setSortingEnabled(True)
-        self.tableView2.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.tableView2.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.splitterright.addWidget(self.tableView2)
 
         self.menubar = QMenuBar(MainWindow)
